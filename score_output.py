@@ -3,104 +3,36 @@
 from __future__ import division
 import sys, nltk, homophone_error_correction
 
-def score():
-    with open("hw3/hw3.dev.err.txt") as wrong_file:
-        wrong_raw_text = wrong_file.read()
-        
-    # tokenize the text into sentences
-    sentence_tokenizer=nltk.data.load('nltk:tokenizers/punkt/english.pickle')
-    wrong_raw_sentences = sentence_tokenizer.tokenize(wrong_raw_text)
+def process_text(filename):
+    with open(filename) as file:
+        raw_text = file.read()
     
-    wrong_words = []
-    for sentence in wrong_raw_sentences:
-        s = sentence.replace('\n', ' ').replace('\r', ' ')
-        # tokenize the sentence into words
-        s = s.strip()
-        wrong_raw_words = s.split(' ')
-        
-        
-        # clean up the text some more before we add POS tags
-        for w in wrong_raw_words:
-            if w.isspace():
-                continue
-            
-            w = w.lower()
-            w = w.replace('.', '')
-            w = w.replace('?', '')
-            w = w.replace(',', '')
-            w = w.replace(';', '')
-            w = w.replace(':', '')
-            w = w.replace('"', '')
-            
-            if not w:
-                continue
-            wrong_words.append(w)
-
-    with open("hw3/hw3.dev.txt") as correct_file:
-        correct_raw_text = correct_file.read()
-        
     # tokenize the text into sentences
     sentence_tokenizer=nltk.data.load('nltk:tokenizers/punkt/english.pickle')
-    correct_raw_sentences = sentence_tokenizer.tokenize(correct_raw_text)
-
-    correct_words = []
-    for sentence in correct_raw_sentences:
+    raw_sentences = sentence_tokenizer.tokenize(raw_text)
+    
+    words = []
+    for sentence in raw_sentences:
         s = sentence.replace('\n', ' ').replace('\r', ' ')
         # tokenize the sentence into words
         s = s.strip()
-        correct_raw_words = s.split(' ')
+        raw_words = s.split(' ')
         
-                
-        # clean up the text some more before we add POS tags
-        for w in correct_raw_words:
-            if w.isspace():
-                continue
-                    
-            w = w.lower()
-            w = w.replace('.', '')
-            w = w.replace('?', '')
-            w = w.replace(',', '')
-            w = w.replace(';', '')
-            w = w.replace(':', '')
-            w = w.replace('"', '')
-            
-            if not w:
-                continue
-            correct_words.append(w)
-
-
-    with open("output.txt") as output_file:
-        output_raw_text = output_file.read()
-
-    # tokenize the text into sentences
-    sentence_tokenizer=nltk.data.load('nltk:tokenizers/punkt/english.pickle')
-    output_raw_sentences = sentence_tokenizer.tokenize(output_raw_text)
-
-    output_words = []
-    for sentence in output_raw_sentences:
-        s = sentence.replace('\n', ' ').replace('\r', ' ')
-        # tokenize the sentence into words
-        s = s.strip()
-        output_raw_words = s.split(' ')
-        
-        
-        # clean up the text some more before we add POS tags
-        for w in output_raw_words:
-            if w.isspace():
+        # clean up the text some more
+        for w in raw_words:
+            if w.isspace() or not w:
                 continue
             
             w = w.lower()
-            w = w.replace('.', '')
-            w = w.replace('?', '')
-            w = w.replace(',', '')
-            w = w.replace(';', '')
-            w = w.replace(':', '')
-            w = w.replace('"', '')
-            
-            if not w:
-                continue
-            output_words.append(w)
+            words.append(w)
+    
+    return words
 
+def score():
+    
+    wrong_words = process_text("hw3/hw3.dev.err.txt")
+    correct_words = process_text("hw3/hw3.dev.txt")
+    output_words = process_text("output.txt")
 
     if len(wrong_words) != len(correct_words):
         print "1 - Uh oh, lengths are {0} and {1}...".format(len(wrong_words),len(correct_words))
