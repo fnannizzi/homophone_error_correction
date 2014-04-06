@@ -2,9 +2,17 @@
 
 from __future__ import division
 from sklearn import svm
-import sys, nltk, homophone_error_correction
+import sys, nltk, homophone_error_correction, time
 
 def learn():
+
+    t0 = time.time()
+    
+    if len(sys.argv) < 2:
+        print "Not enough arguments, need a test filename. Quitting..."
+        return
+    
+    test_filename = sys.argv[1]
     
     hec = homophone_error_correction.HomophoneErrorCorrection()
     classifiers = []
@@ -46,9 +54,10 @@ def learn():
         classifiers.append(classifier)
 
     print "Reading test data..."
-    with open("test_data.txt") as testfile:
+    with open(test_filename) as testfile:
         raw_text = testfile.read()
-
+    
+    raw_text_index = 0
     # tokenize the text into sentences
     sentence_tokenizer=nltk.data.load('nltk:tokenizers/punkt/english.pickle')
     raw_sentences = sentence_tokenizer.tokenize(raw_text)
@@ -80,18 +89,21 @@ def learn():
         
             # add POS tags to the words
             pos_tagged_words = nltk.pos_tag(words)
-            print s
-            print "Len raw text: {0} len clean text: {1}".format(len(raw_words), len(words))
+            #print s
+            #print "Len raw text: {0} len clean text: {1}".format(len(raw_words), len(words))
             len_words = len(words)
 
             for index, w in enumerate(words):
+                while(raw_text[raw_text_index].lower() != w[0]):
+                    raw_text_index += 1
+                
                 # check to see if word is one of the homophones we're searching for
                 h_type = hec.find_homophone_type(w)
                 if  h_type != -1:
                     # the current word is one of the types of homophones we're looking for
                     # determine the class of the homophone (within its type)
                     h_class = hec.find_homophone_class(w)
-                    print "Word: {0} h_type: {1} h_class: {2}".format(w, h_type, h_class)
+                    #print "Word: {0} h_type: {1} h_class: {2}".format(w, h_type, h_class)
                 
                     # find the features for this training example
                     features = []
@@ -123,15 +135,24 @@ def learn():
 
                     classification = classifiers[h_type].predict(features)
                     if classification != h_class:
-                        print "Found correction!"
+                        #print "Found correction!"
                         correction = hec.homophone_lookup(h_type, classification)
-                        raw_words[index] = correction
-                        print "Corrected text: ", raw_words
+                        raw_text_half1 = raw_text[:raw_text_index]
+                        raw_text_half2 = raw_text[(raw_text_index + len(w)):]
+                        raw_text = raw_text_half1 + correction + raw_text_half2
+                        raw_text_index += len(correction)
+                    else:
+                        raw_text_index += len(w)
+                        #print "Corrected text: ", raw_words
+                else:
+                    raw_text_index += len(w)
 
 
-            for w in raw_words:
-                outfile.write("{0} ".format(w))
+        outfile.write(raw_text)
+        t1 = time.time()
 
+        total = t1-t0
+        print "Execution took {0} seconds.".format(total)
 
 
 
