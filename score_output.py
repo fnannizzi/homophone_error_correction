@@ -129,8 +129,9 @@ def score():
 
     precision = correct_mods/total_mods
     recall = correct_mods/mods_needed
+    fscore = (2 * precision * recall)/(precision + recall)
 
     print "Precision: {0} Recall: {1}".format(precision, recall)
-
+    print "F-score: {0}".format(fscore)
 
 score()
