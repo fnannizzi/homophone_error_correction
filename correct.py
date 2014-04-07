@@ -60,13 +60,21 @@ def learn():
     
     raw_text_index = 0
     # tokenize the text into sentences
-    print "Beginning correction on input..."
+    print "Tokenizing input text..."
     t1 = time.time()
     sentence_tokenizer=nltk.data.load('nltk:tokenizers/punkt/english.pickle')
     raw_sentences = sentence_tokenizer.tokenize(raw_text)
+    t2 = time.time()
+    num_sentences = len(raw_sentences)
+    progress_bar = 0
 
+    print "Beginning correction on input..."
     with open("output.txt", 'w+') as outfile:
-        for sentence in raw_sentences:
+        for index,sentence in enumerate(raw_sentences):
+            if index > ((num_sentences/50)*progress_bar):
+                sys.stdout.write('-')
+                progress_bar += 1
+            
             s = sentence.replace('\n', ' ').replace('\r', ' ')
             # tokenize the sentence into words
             s = s.strip()
@@ -145,11 +153,14 @@ def learn():
 
 
         outfile.write(raw_text)
-        t2 = time.time()
+        t3 = time.time()
 
-        total_time = t2-t0
-        correction_time = t2-t1
+        total_time = t3-t0
+        tokenize_time = t2-t1
+        correction_time = t3-t2
+        print " "
         print "Execution took {0} minutes".format(total_time/60)
+        print "Tokenizing the text took {0} minutes".format(tokenize_time/60)
         print "Correction took {0} minutes.".format(correction_time/60)
 
 
